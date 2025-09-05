@@ -1,23 +1,23 @@
 from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from chatbot_agent import handle_query
+import os
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="."), name="static")
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 def serve_html():
     try:
-        with open("index.html") as f:
-            return HTMLResponse(content=f.read())
+        return FileResponse("index.html", media_type="text/html")
     except FileNotFoundError:
-        return HTMLResponse(content="<h1>Error: index.html not found</h1>", status_code=404)
+        return JSONResponse(content={"error": "index.html not found"}, status_code=404)
 
 @app.get("/favicon.ico")
 def get_favicon():
-    return JSONResponse(content={}, status_code=204)  # No content for favicon
+    return JSONResponse(content={}, status_code=204)
 
 @app.get("/chat")
 def chat(query: str = Query(default=""), faith: str = Query(default="general")):
@@ -46,6 +46,11 @@ def chat(query: str = Query(default=""), faith: str = Query(default="general")):
 @app.get("/audio")
 def get_audio():
     try:
+        if not os.path.exists("voice_support.mp3"):
+            return JSONResponse(
+                content={"error": "Audio file not available. Try a query with 'pain', 'overwhelmed', or 'stressed' first."},
+                status_code=404
+            )
         return FileResponse('voice_support.mp3', media_type='audio/mpeg')
-    except FileNotFoundError:
-        return JSONResponse(content={"error": "Audio file not found"}, status_code=404)
+    except Exception as e:
+        return JSONResponse(content={"error": f"Failed to serve audio: {str(e)}"}, status_code=500)

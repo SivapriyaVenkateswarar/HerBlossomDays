@@ -16,7 +16,10 @@ def get_motivational_quote(faith: str) -> str:
 @tool
 def generate_voice_support(text: str) -> str:
     """Generate calming voice audio from text and return file path."""
-    tts = gTTS(text=text, lang='en', slow=True)
-    file_path = 'voice_support.mp3'
-    tts.save(file_path)
-    return file_path
+    try:
+        tts = gTTS(text=text, lang='en', slow=True)
+        file_path = os.path.join(os.getcwd(), 'voice_support.mp3')
+        tts.save(file_path)
+        return 'voice_support.mp3'
+    except Exception as e:
+        return f"Error generating audio: {str(e)}"

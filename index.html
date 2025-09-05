@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Menstrual Health Chatbot</title>
+    <meta charset="utf-8">
 </head>
 <body>
     <input id="query" placeholder="Ask about periods..." />
@@ -14,18 +15,37 @@
     <button onclick="submitQuery()">Ask</button>
     <div id="response"></div>
     <audio id="audio" controls></audio>
+    <div id="audio-error" style="color: red;"></div>
     <script>
         async function submitQuery() {
             const query = document.getElementById('query').value;
             const faith = document.getElementById('faith').value;
-            const res = await fetch(`/chat?query=${encodeURIComponent(query)}&faith=${faith}`);
-            const data = await res.json();
-            document.getElementById('response').innerHTML = `
-                <p>Response: ${data.text_response}</p>
-                <p>Quote: ${data.quote}</p>
-            `;
-            if (data.voice_support) {
-                document.getElementById('audio').src = '/audio';
+            const audioError = document.getElementById('audio-error');
+            audioError.textContent = '';
+            try {
+                const res = await fetch(`/chat?query=${encodeURIComponent(query)}&faith=${faith}`);
+                if (!res.ok) {
+                    throw new Error(`HTTP error: ${res.status}`);
+                }
+                const data = await res.json();
+                document.getElementById('response').innerHTML = `
+                    <p>Response: ${data.text_response}</p>
+                    <p>Quote: ${data.quote}</p>
+                `;
+                const audio = document.getElementById('audio');
+                if (data.voice_support) {
+                    audio.src = `/audio?t=${new Date().getTime()}`;
+                    audio.load();
+                    audio.play().catch(e => {
+                        audioError.textContent = `Error playing audio: ${e.message}`;
+                    });
+                } else {
+                    audio.src = '';
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p>Error: ${error.message}</p>
+                `;
             }
         }
     </script>

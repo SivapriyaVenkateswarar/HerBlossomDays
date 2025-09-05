@@ -1,4 +1,5 @@
 import os
+import warnings
 from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEndpoint
 from langchain.agents import initialize_agent, AgentType
@@ -6,6 +7,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain.llms.base import LLM
 from tools import get_motivational_quote, generate_voice_support
 from google.generativeai import configure, GenerativeModel
+
+# Suppress LangChain deprecation warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Load environment variables from .env
 load_dotenv()
@@ -71,15 +75,12 @@ def handle_query(user_input: str, faith: str = "general") -> dict:
     You are a supportive chatbot for menstrual health, respecting {faith} faith.
     Answer factually and empathetically in a concise manner.
     Always append a motivational quote using the get_motivational_quote tool.
-    If the user seems stressed (e.g., mentions 'pain', 'overwhelmed'), use generate_voice_support with calming text.
+    If the user seems stressed (e.g., mentions 'pain', 'overwhelmed'), use generate_voice_support to provide calming audio at /audio.
     Question: {user_input}
     """
     try:
-        # Get chat history from memory
         chat_history = memory.load_memory_variables({})["chat_history"]
-        # Pass both input and chat_history to agent
         response = agent.run({"input": prompt, "chat_history": chat_history})
-        # Save the interaction to memory
         memory.save_context({"input": user_input}, {"output": response})
     except Exception as e:
         response = f"Error processing query: {str(e)}"
@@ -88,6 +89,7 @@ def handle_query(user_input: str, faith: str = "general") -> dict:
     voice_path = None
     if any(word in user_input.lower() for word in ["pain", "overwhelmed", "stressed"]):
         voice_path = generate_voice_support.invoke({"text": "Take a deep breath. You are not alone."})
+        response = response.replace("/tmp/voice_support_file.mp3", "/audio").replace("/tmp/calm_audio.mp3", "/audio").replace("voice_support.mp3", "/audio")
 
     return {
         "text_response": response,
