@@ -1,0 +1,15 @@
+{
+  "general": [
+    {"quote": "Your strength is within you.", "source": "General Wisdom"},
+    {"quote": "Embrace your body’s natural cycle.", "source": "Health Wisdom"}
+  ],
+  "hindu": [
+    {"quote": "The body is a temple; honor it with care.", "source": "Bhagavad Gita"}
+  ],
+  "islamic": [
+    {"quote": "Allah does not burden a soul beyond its capacity.", "source": "Quran 2:286"}
+  ],
+  "christian": [
+    {"quote": "You are fearfully and wonderfully made.", "source": "Psalm 139:14"}
+  ]
+}

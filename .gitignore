@@ -1,0 +1,31 @@
+# Environment variables
+.env
+
+# Python virtual environment
+venv/
+.env/
+*.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.log
+*.pid
+*.seed
+*.swp
+*.swo
+
+# IDE files
+.vscode/
+.idea/
+
+# Generated files
+voice_support.mp3
+
+# OS-specific files
+.DS_Store
+Thumbs.db
