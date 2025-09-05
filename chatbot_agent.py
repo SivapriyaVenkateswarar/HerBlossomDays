@@ -73,9 +73,9 @@ def handle_query(user_input: str, faith: str = "general") -> dict:
         }
     prompt = f"""
     You are a supportive chatbot for menstrual health, respecting {faith} faith.
-    Answer factually and empathetically in a concise manner.
+    Answer factually and empathetically in a concise manner, including dietary tips like iron-rich foods (e.g., spinach) when relevant.
     Always append a motivational quote using the get_motivational_quote tool.
-    If the user seems stressed (e.g., mentions 'pain', 'overwhelmed'), use generate_voice_support to provide calming audio at /audio.
+    If the user seems stressed (e.g., mentions 'pain', 'overwhelmed'), use generate_voice_support to provide calming audio.
     Question: {user_input}
     """
     try:
@@ -89,7 +89,7 @@ def handle_query(user_input: str, faith: str = "general") -> dict:
     voice_path = None
     if any(word in user_input.lower() for word in ["pain", "overwhelmed", "stressed"]):
         voice_path = generate_voice_support.invoke({"text": "Take a deep breath. You are not alone."})
-        response = response.replace("/tmp/voice_support_file.mp3", "/audio").replace("/tmp/calm_audio.mp3", "/audio").replace("voice_support.mp3", "/audio")
+        response = response.replace("/tmp/voice_support_file.mp3", "").replace("/tmp/calm_audio.mp3", "").replace("voice_support.mp3", "").replace("/audio", "").replace("[/audio]", "").strip()
 
     return {
         "text_response": response,

@@ -1,15 +1,19 @@
 {
   "general": [
     {"quote": "Your strength is within you.", "source": "General Wisdom"},
-    {"quote": "Embrace your body’s natural cycle.", "source": "Health Wisdom"}
+    {"quote": "Embrace your body’s natural cycle.", "source": "Health Wisdom"},
+    {"quote": "Every challenge you face builds your resilience.", "source": "General Wisdom"}
   ],
   "hindu": [
-    {"quote": "The body is a temple; honor it with care.", "source": "Bhagavad Gita"}
+    {"quote": "The body is a temple; honor it with care.", "source": "Bhagavad Gita"},
+    {"quote": "Balance in body and mind brings peace.", "source": "Ayurveda"}
   ],
   "islamic": [
-    {"quote": "Allah does not burden a soul beyond its capacity.", "source": "Quran 2:286"}
+    {"quote": "Allah does not burden a soul beyond its capacity.", "source": "Quran 2:286"},
+    {"quote": "Patience is a pillar of faith.", "source": "Hadith"}
   ],
   "christian": [
-    {"quote": "You are fearfully and wonderfully made.", "source": "Psalm 139:14"}
+    {"quote": "You are fearfully and wonderfully made.", "source": "Psalm 139:14"},
+    {"quote": "Cast all your anxiety on Him because He cares for you.", "source": "1 Peter 5:7"}
   ]
 }

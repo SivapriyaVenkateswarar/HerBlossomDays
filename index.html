@@ -3,9 +3,21 @@
 <head>
     <title>Menstrual Health Chatbot</title>
     <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        input[type="text"], select { padding: 8px; margin-right: 10px; }
+        button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        #response { margin-top: 20px; }
+        #audio { margin-top: 10px; }
+        #audio-error { margin-top: 10px; }
+        .tracker { margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <input id="query" placeholder="Ask about periods..." />
+    <h1>Menstrual Health Chatbot</h1>
+    <input id="query" type="text" placeholder="Ask about periods..." />
     <select id="faith">
         <option value="general">General</option>
         <option value="hindu">Hindu</option>
@@ -16,6 +28,13 @@
     <div id="response"></div>
     <audio id="audio" controls></audio>
     <div id="audio-error" style="color: red;"></div>
+    <div class="tracker">
+        <h3>Period Tracker</h3>
+        <input type="date" id="last-period" />
+        <input type="number" id="cycle-length" placeholder="Cycle length (days)" min="21" max="35" value="28" />
+        <button onclick="trackPeriod()">Track</button>
+        <div id="tracker-result"></div>
+    </div>
     <script>
         async function submitQuery() {
             const query = document.getElementById('query').value;
@@ -29,8 +48,8 @@
                 }
                 const data = await res.json();
                 document.getElementById('response').innerHTML = `
-                    <p>Response: ${data.text_response}</p>
-                    <p>Quote: ${data.quote}</p>
+                    <p><strong>Response:</strong> ${data.text_response}</p>
+                    <p><strong>Quote:</strong> ${data.quote}</p>
                 `;
                 const audio = document.getElementById('audio');
                 if (data.voice_support) {
@@ -44,8 +63,19 @@
                 }
             } catch (error) {
                 document.getElementById('response').innerHTML = `
-                    <p>Error: ${error.message}</p>
+                    <p><strong>Error:</strong> ${error.message}</p>
                 `;
+            }
+        }
+
+        function trackPeriod() {
+            const lastPeriod = new Date(document.getElementById('last-period').value);
+            const cycleLength = parseInt(document.getElementById('cycle-length').value);
+            if (lastPeriod && cycleLength) {
+                const nextPeriod = new Date(lastPeriod.getTime() + cycleLength * 24 * 60 * 60 * 1000);
+                document.getElementById('tracker-result').innerHTML = `Estimated next period: ${nextPeriod.toISOString().split('T')[0]}`;
+            } else {
+                document.getElementById('tracker-result').innerHTML = 'Please enter valid date and cycle length.';
             }
         }
     </script>

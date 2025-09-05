@@ -1,17 +1,41 @@
 from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from chatbot_agent import handle_query
 import os
 
 app = FastAPI()
 
+# Add CORS middleware to handle browser requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory="."), name="static")
+
+class CustomFileResponse(Response):
+    def __init__(self, path: str, media_type: str, **kwargs):
+        with open(path, "rb") as f:
+            content = f.read()
+            # Remove BOM if present
+            if content.startswith(b'\xEF\xBB\xBF'):
+                content = content[3:]
+        super().__init__(
+            content=content,
+            media_type=media_type,
+            headers={"Content-Type": f"{media_type}; charset=utf-8", "Content-Length": str(len(content))},
+            **kwargs
+        )
 
 @app.get("/")
 def serve_html():
     try:
-        return FileResponse("index.html", media_type="text/html")
+        return CustomFileResponse("index.html", media_type="text/html")
     except FileNotFoundError:
         return JSONResponse(content={"error": "index.html not found"}, status_code=404)
 
