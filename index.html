@@ -6,13 +6,39 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #333; }
-        input[type="text"], select { padding: 8px; margin-right: 10px; }
-        button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        input[type="text"], select, input[type="date"], input[type="number"] { 
+            padding: 8px; 
+            margin-right: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+        }
+        button { 
+            padding: 8px 16px; 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
         button:hover { background-color: #45a049; }
-        #response { margin-top: 20px; }
+        #mic-button { background-color: #2196F3; }
+        #mic-button.recording { background-color: #ff4444; }
+        #mic-button:hover { background-color: #1976D2; }
+        #mic-button.recording:hover { background-color: #cc0000; }
+        #response { 
+            margin-top: 20px; 
+            background-color: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 5px; 
+        }
         #audio { margin-top: 10px; }
-        #audio-error { margin-top: 10px; }
-        .tracker { margin-top: 20px; }
+        #audio-error { margin-top: 10px; color: red; }
+        .tracker { 
+            margin-top: 20px; 
+            background-color: #e8f4f8; 
+            padding: 15px; 
+            border-radius: 5px; 
+        }
     </style>
 </head>
 <body>
@@ -25,9 +51,10 @@
         <option value="christian">Christian</option>
     </select>
     <button onclick="submitQuery()">Ask</button>
+    <button id="mic-button" onclick="startVoiceInput()">🎤 Start Voice</button>
     <div id="response"></div>
-    <audio id="audio" controls></audio>
-    <div id="audio-error" style="color: red;"></div>
+    <audio id="audio" controls preload="auto"></audio>
+    <div id="audio-error"></div>
     <div class="tracker">
         <h3>Period Tracker</h3>
         <input type="date" id="last-period" />
@@ -56,15 +83,17 @@
                     audio.src = `/audio?t=${new Date().getTime()}`;
                     audio.load();
                     audio.play().catch(e => {
-                        audioError.textContent = `Error playing audio: ${e.message}`;
+                        audioError.textContent = `Error playing audio: ${e.message}. Ensure browser allows audio playback.`;
                     });
                 } else {
                     audio.src = '';
+                    audioError.textContent = 'No audio available for this query. Try mentioning symptoms like cramps, bloating, mood swings, or other period-related terms.';
                 }
             } catch (error) {
                 document.getElementById('response').innerHTML = `
                     <p><strong>Error:</strong> ${error.message}</p>
                 `;
+                audioError.textContent = `Request failed: ${error.message}`;
             }
         }
 
@@ -77,6 +106,67 @@
             } else {
                 document.getElementById('tracker-result').innerHTML = 'Please enter valid date and cycle length.';
             }
+        }
+
+        function startVoiceInput() {
+            const micButton = document.getElementById('mic-button');
+            const queryInput = document.getElementById('query');
+            const audioError = document.getElementById('audio-error');
+            if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+                audioError.textContent = 'Speech recognition not supported in this browser. Use Chrome or Edge.';
+                return;
+            }
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            recognition.continuous = false;
+
+            if (micButton.classList.contains('recording')) {
+                recognition.stop();
+                return;
+            }
+
+            micButton.textContent = '🎤 Stop Recording';
+            micButton.classList.add('recording');
+            audioError.textContent = 'Listening... Please speak clearly into your microphone.';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                queryInput.value = transcript;
+                micButton.textContent = '🎤 Start Voice';
+                micButton.classList.remove('recording');
+                audioError.textContent = '';
+                submitQuery();
+            };
+
+            recognition.onerror = function(event) {
+                let errorMsg = `Voice input error: ${event.error}`;
+                if (event.error === 'no-speech') {
+                    errorMsg = 'No speech detected. Please speak louder or check your microphone.';
+                } else if (event.error === 'not-allowed') {
+                    errorMsg = 'Microphone access denied. Please allow microphone access in your browser settings (check the address bar or system settings).';
+                } else if (event.error === 'audio-capture') {
+                    errorMsg = 'No microphone detected. Please connect a microphone and try again.';
+                }
+                audioError.textContent = errorMsg;
+                micButton.textContent = '🎤 Start Voice';
+                micButton.classList.remove('recording');
+            };
+
+            recognition.onend = function() {
+                micButton.textContent = '🎤 Start Voice';
+                micButton.classList.remove('recording');
+                if (audioError.textContent === 'Listening... Please speak clearly into your microphone.') {
+                    audioError.textContent = '';
+                }
+            };
+
+            // Auto-stop after 15 seconds
+            setTimeout(() => {
+                recognition.stop();
+            }, 15000);
         }
     </script>
 </body>
